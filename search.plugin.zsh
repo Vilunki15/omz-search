@@ -96,7 +96,8 @@ search() {
     {
       print -r -- "# Search: \"$query\""
       print
-      print -r -- "- Directory: \`${dir:A}\`"
+      # Paths in the list are relative to the current directory, not to $dir.
+      print -r -- "- Directory: \`$PWD\`"
       print -r -- "- Date: $(date '+%Y-%m-%d %H:%M')"
       print -r -- "- Found $#matches of \"$query\""
       print

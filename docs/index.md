@@ -72,7 +72,7 @@ search -o legacy.md "OldButton"     # also save a review checklist
 
 - The first line is always `Found N of "phrase"`, where N counts every occurrence.
 - Each following line is one occurrence as `path:line:column`, counted from 1. Two matches on one line are listed separately.
-- Paths are relative to the searched directory and sorted by path.
+- Paths are relative to your current directory (`search foo src` prints `src/...`), so they stay clickable in the terminal. They are sorted by path.
 
 ### Review checklist
 
@@ -81,20 +81,20 @@ search -o legacy.md "OldButton"     # also save a review checklist
 ```markdown
 # Search: "OldButton"
 
-- Directory: `/home/me/project/src`
+- Directory: `/home/me/project`
 - Date: 2026-10-11 19:46
 - Found 3 of "OldButton"
 
-- [ ] `App.tsx:1:10`
-- [ ] `App.tsx:2:2`
-- [ ] `legacy/OldButton.tsx:1:14`
+- [ ] `src/App.tsx:1:10`
+- [ ] `src/App.tsx:2:2`
+- [ ] `src/legacy/OldButton.tsx:1:14`
 ```
 
 Tick items off as you go. Halfway through a review the list looks like this:
 
-- [x] `App.tsx:1:10`
-- [x] `App.tsx:2:2`
-- [ ] `legacy/OldButton.tsx:1:14`
+- [x] `src/App.tsx:1:10`
+- [x] `src/App.tsx:2:2`
+- [ ] `src/legacy/OldButton.tsx:1:14`
 
 `search` never overwrites an existing checklist, so a re-run cannot wipe out your ticks. It exits with status 2 instead.
 

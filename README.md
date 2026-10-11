@@ -1,5 +1,7 @@
 # omz-search
 
+[![Tests](https://github.com/Vilunki15/omz-search/actions/workflows/test.yml/badge.svg)](https://github.com/Vilunki15/omz-search/actions/workflows/test.yml)
+
 An [Oh My Zsh](https://ohmyz.sh/) plugin that adds a `search` command. It finds a phrase in your source and text files and lists every match as `path:line:column`.
 
 ```console
@@ -93,7 +95,7 @@ search -o legacy.md "OldButton"    # also save a review checklist
 
 - The first line is always `Found N of "phrase"`, where N is the total number of occurrences.
 - Each following line is one occurrence: `path:line:column`. Line and column numbers start at 1. A line containing the phrase twice is listed twice, with different columns.
-- Paths are relative to the directory you searched.
+- Paths are relative to your current directory, so `search foo src` prints `src/...`. This keeps them clickable in the terminal. An absolute directory argument gives absolute paths.
 
 ### Review checklist
 
@@ -102,9 +104,9 @@ search -o legacy.md "OldButton"    # also save a review checklist
 ```console
 $ search -o oldbutton-review.md "OldButton" src
 Found 3 of "OldButton"
-App.tsx:1:10
-App.tsx:2:2
-legacy/OldButton.tsx:1:14
+src/App.tsx:1:10
+src/App.tsx:2:2
+src/legacy/OldButton.tsx:1:14
 Checklist saved to oldbutton-review.md
 ```
 
@@ -113,16 +115,16 @@ Checklist saved to oldbutton-review.md
 ```markdown
 # Search: "OldButton"
 
-- Directory: `/home/me/project/src`
+- Directory: `/home/me/project`
 - Date: 2026-10-11 19:46
 - Found 3 of "OldButton"
 
-- [ ] `App.tsx:1:10`
-- [ ] `App.tsx:2:2`
-- [ ] `legacy/OldButton.tsx:1:14`
+- [ ] `src/App.tsx:1:10`
+- [ ] `src/App.tsx:2:2`
+- [ ] `src/legacy/OldButton.tsx:1:14`
 ```
 
-Change `- [ ]` to `- [x]` as you check each item. GitHub and VS Code's Markdown preview render the list as checkboxes. The paths are relative to the directory listed in the header.
+Change `- [ ]` to `- [x]` as you check each item. GitHub and VS Code's Markdown preview render the list as checkboxes. The paths are relative to the directory listed in the header, which is the directory you ran `search` from.
 
 `search` refuses to overwrite an existing file (exit status 2), so a re-run cannot wipe out ticked items. Pick a new file name or delete the old checklist first.
 
@@ -181,6 +183,16 @@ SEARCH_EXCLUDE_DIRS=(.git node_modules dist build out coverage .next .nuxt .cach
 3. The plugin prints the total count, then the list, sorted by path.
 
 The phrase reaches `awk` through an environment variable rather than `awk -v`, so backslashes in the phrase are not treated as escape sequences.
+
+## Tests
+
+`tests/run.zsh` builds a small fixture tree in a temporary directory and checks the output and exit status of `search` against it. Run it with:
+
+```sh
+zsh tests/run.zsh
+```
+
+GitHub Actions runs the tests on every push and pull request, on both Ubuntu (GNU grep and awk) and macOS (BSD grep and awk).
 
 ## Limitations
 
