@@ -2,8 +2,10 @@ name: Tests
 
 on:
   push:
+    branches: ['**']   # branches only: tag pushes are tested by release.yml
   pull_request:
   workflow_dispatch:
+  workflow_call:       # lets release.yml run the same tests before releasing
 
 jobs:
   test:

@@ -194,6 +194,17 @@ zsh tests/run.zsh
 
 GitHub Actions runs the tests on every push and pull request, on both Ubuntu (GNU grep and awk) and macOS (BSD grep and awk).
 
+## Releases
+
+Releases are made by pushing a version tag:
+
+```sh
+git tag v1.1.0
+git push origin v1.1.0
+```
+
+The Release workflow runs the tests first and publishes a [GitHub Release](https://github.com/Vilunki15/omz-search/releases) only if they pass. The release notes list the changes since the previous tag. Version numbers follow [semantic versioning](https://semver.org/): patch for fixes, minor for new features, major for changes that break existing usage.
+
 ## Limitations
 
 - A match cannot span multiple lines.
