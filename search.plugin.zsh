@@ -1,8 +1,9 @@
 # search - find a literal phrase in source and text files.
 #
-#   search [-i] [-t ext,ext,...] "phrase" [directory]
+#   search [-i] [-t ext,ext,...] [-o checklist.md] "phrase" [directory]
 #
 # Prints "Found N of "phrase"" followed by one path:line:column per match.
+# With -o, the matches are also written to a Markdown checklist.
 # See README.md for configuration.
 
 # Default file extensions and skipped directories. Override either one by
@@ -21,14 +22,15 @@
 search() {
   emulate -L zsh
 
-  local usage='Usage: search [-i] [-t ext,ext,...] "phrase" [directory]'
-  local ignore_case=0 opt OPTIND OPTARG
+  local usage='Usage: search [-i] [-t ext,ext,...] [-o checklist.md] "phrase" [directory]'
+  local ignore_case=0 outfile opt OPTIND OPTARG
   local -a exts
 
-  while getopts ':it:h' opt; do
+  while getopts ':it:o:h' opt; do
     case $opt in
       i) ignore_case=1 ;;
       t) exts=(${(s:,:)OPTARG}) ;;
+      o) outfile=$OPTARG ;;
       h) print -r -- $usage; return 0 ;;
       *) print -ru2 -- $usage; return 2 ;;
     esac
@@ -43,6 +45,11 @@ search() {
   local query=$1 dir=${2:-.}
   if [[ ! -d $dir ]]; then
     print -ru2 -- "search: no such directory: $dir"
+    return 2
+  fi
+  # Never overwrite a checklist: it may already contain ticked items.
+  if [[ -n $outfile && -e $outfile ]]; then
+    print -ru2 -- "search: $outfile already exists, choose another file name"
     return 2
   fi
   (( $#exts )) || exts=($SEARCH_EXTENSIONS)
@@ -84,5 +91,19 @@ search() {
 
   print -r -- "Found $#matches of \"$query\""
   (( $#matches )) && print -rl -- $matches
+
+  if [[ -n $outfile ]]; then
+    {
+      print -r -- "# Search: \"$query\""
+      print
+      print -r -- "- Directory: \`${dir:A}\`"
+      print -r -- "- Date: $(date '+%Y-%m-%d %H:%M')"
+      print -r -- "- Found $#matches of \"$query\""
+      print
+      local m
+      for m in $matches; do print -r -- "- [ ] \`$m\`"; done
+    } > $outfile || return 2
+    print -r -- "Checklist saved to $outfile"
+  fi
   (( $#matches ))
 }

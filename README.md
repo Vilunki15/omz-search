@@ -67,7 +67,7 @@ Remove `search` from `plugins=(...)` in `~/.zshrc`, delete the plugin folder and
 ## Usage
 
 ```
-search [-i] [-t ext,ext,...] "phrase" [directory]
+search [-i] [-t ext,ext,...] [-o checklist.md] "phrase" [directory]
 ```
 
 | Argument / option | Description |
@@ -76,6 +76,7 @@ search [-i] [-t ext,ext,...] "phrase" [directory]
 | `directory` | Where to search. Defaults to the current directory. Subdirectories are included. |
 | `-i` | Ignore case. |
 | `-t ext,ext` | Search only these file extensions for this run, for example `-t ts,tsx`. |
+| `-o file.md` | Also write the matches to a Markdown checklist. See [Review checklist](#review-checklist). |
 | `-h` | Show the usage line. |
 
 Examples:
@@ -85,6 +86,7 @@ search "useState"                  # current directory, default file types
 search -i "todo" src               # case-insensitive, only inside src/
 search -t scss,css "primary-color"  # only stylesheets
 search -- "-webkit-"               # phrase that starts with a dash
+search -o legacy.md "OldButton"    # also save a review checklist
 ```
 
 ### Output
@@ -93,13 +95,44 @@ search -- "-webkit-"               # phrase that starts with a dash
 - Each following line is one occurrence: `path:line:column`. Line and column numbers start at 1. A line containing the phrase twice is listed twice, with different columns.
 - Paths are relative to the directory you searched.
 
+### Review checklist
+
+`-o file.md` writes the matches to a Markdown file as a task list, in addition to printing them. Use it to work through a list of places that need attention, such as every use of a legacy component you are replacing.
+
+```console
+$ search -o oldbutton-review.md "OldButton" src
+Found 3 of "OldButton"
+App.tsx:1:10
+App.tsx:2:2
+legacy/OldButton.tsx:1:14
+Checklist saved to oldbutton-review.md
+```
+
+`oldbutton-review.md`:
+
+```markdown
+# Search: "OldButton"
+
+- Directory: `/home/me/project/src`
+- Date: 2026-10-11 19:46
+- Found 3 of "OldButton"
+
+- [ ] `App.tsx:1:10`
+- [ ] `App.tsx:2:2`
+- [ ] `legacy/OldButton.tsx:1:14`
+```
+
+Change `- [ ]` to `- [x]` as you check each item. GitHub and VS Code's Markdown preview render the list as checkboxes. The paths are relative to the directory listed in the header.
+
+`search` refuses to overwrite an existing file (exit status 2), so a re-run cannot wipe out ticked items. Pick a new file name or delete the old checklist first.
+
 ### Exit status
 
 | Code | Meaning |
 | --- | --- |
 | `0` | At least one match was found |
 | `1` | No matches |
-| `2` | Invalid arguments or directory not found |
+| `2` | Invalid arguments, directory not found, or the `-o` file already exists or cannot be written |
 
 So it can be used in scripts: `search "console.log" src >/dev/null && echo "remove debug logs"`.
 
@@ -153,4 +186,6 @@ The phrase reaches `awk` through an environment variable rather than `awk -v`, s
 
 - A match cannot span multiple lines.
 - Columns are counted in characters on GNU awk and in bytes on some other awk implementations. They differ only on lines containing non-ASCII text before the match.
+- A checklist saved inside the searched directory contains the phrase, so later searches with the default extensions list it as a match. Save checklists outside the project or delete them when done.
+- Line numbers in a checklist are not updated when you edit the files afterwards.
 - `.gitignore` is not read. Use `SEARCH_EXCLUDE_DIRS` to skip generated folders.
